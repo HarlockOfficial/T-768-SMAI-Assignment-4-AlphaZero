@@ -3,9 +3,12 @@ import math
 import random
 import misc.utils as utils
 import agents.agent as agent
-from misc import game_tensor as gt
+from misc import game_tensor as gt, game_tensor
 import misc.model_learner as model_learner
 
+
+C_uct = 1.0
+C_puct = 1.0
 
 class A4MABAgent(agent.Agent):
     """
@@ -22,7 +25,7 @@ class A4MABAgent(agent.Agent):
             self.p = [1.0 for _ in range(self.len)]
             return
 
-    # ------------------------- Some helper routines  (you add as needed(  -------------------------------
+    # ------------------------- Some helper routines  (you add as needed)  -------------------------------
 
     @staticmethod
     def visits(q, i):
@@ -39,6 +42,15 @@ class A4MABAgent(agent.Agent):
             g.make(move)
         return -1.0 if g.get_to_move() == player else 1.0
 
+    @staticmethod
+    def uct(move: tuple, index: int):
+        # TODO test, move might not have q
+        return move[1].q[index].avg + C_uct * math.sqrt(2 * math.log(move[1].n) / move[1].q[index].n)
+
+    @staticmethod
+    def puct(move: tuple, index: int):
+        # TODO test, move might not have q
+        return move[1].q[index].avg + C_puct * move[1].p[index] * math.sqrt(move[1].n) / (1 + move[1].q[index].n)
     # -------------- Methods -----------------------
 
     def __init__(self, name, params):
@@ -71,20 +83,36 @@ class A4MABAgent(agent.Agent):
         self._abort_checker.reset()
 
         # Use to keep track of root statistics.
-        label = self.NodeLabel(game.generate(True))
+        all_moves = game.generate(True)
+        label = self.NodeLabel(all_moves)
 
         # If in a play_node requiring a nn, call the model and initialize the label.p[i] priors
         # with the returned policy.
-        # TO DO:
-        ...
+        if self._play_mode >= 1:
+            try:
+                game_tensor.assert_initialized()
+            except AssertionError:
+                game_tensor.init(game)
+            g_tensor = game_tensor.state_to_tensor(game)
+            _, policy_tensor = self._model(g_tensor)
+            policy = game_tensor.move_tensor_to_policy(all_moves, policy_tensor, game.get_to_move())
+            for i in range(label.len):
+                label.p[i] = policy[all_moves[i]]
 
         num_simulations = 0
         while True:
-
-            # TO DO:
-            # Pick a move using UCT/PUCT, simulate it (using the playout(...) routine,
-            # and update necessary logistics.
-            ...
+            if self._play_mode == 0:
+                next_move_index = utils.argmax(label.moves, label.len, A4MABAgent.uct)
+            elif self._play_mode >= 1:
+                next_move_index = utils.argmax(label.moves, label.len, A4MABAgent.puct)
+            else:
+                raise ValueError('Invalid play mode')
+            move = label.moves[next_move_index]
+            game.make(move)
+            result = A4MABAgent.playout(game)
+            game.unmake(move)
+            label.q[next_move_index].add(result)
+            label.n += 1
 
             # Update simulation count, and check if search resources up.
             num_simulations += 1
