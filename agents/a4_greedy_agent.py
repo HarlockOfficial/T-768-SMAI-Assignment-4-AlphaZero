@@ -2,6 +2,7 @@ import random
 import agents.agent as agent
 import misc.utils as utils
 import misc.model_learner as model_learner
+from misc import game_tensor
 
 
 class A4GreedyAgent(agent.Agent):
@@ -39,21 +40,56 @@ class A4GreedyAgent(agent.Agent):
         return random.choice(g.generate())
 
     def play_mode_winning_captures_any(self, g):
-        # To do ...
-        return random.choice(g.generate())
+        moves_list = g.generate()
+        winning_moves = []
+        capture_moves = []
+        for move in moves_list:
+            if A4GreedyAgent.is_winning_move(g, move):
+                winning_moves.append(move)
+            elif A4GreedyAgent.is_capture_move(g, move):
+                capture_moves.append(move)
+        if len(winning_moves) > 0:
+            return random.choice(winning_moves)
+        if len(capture_moves) > 0:
+            return random.choice(capture_moves)
+        return random.choice(moves_list)
+
+    def __play_mode_one_ply(self, g, eval_fn):
+        all_moves = g.generate()
+        winning_moves = []
+        other_moves = []
+        for move in all_moves:
+            if A4GreedyAgent.is_winning_move(g, move):
+                winning_moves.append(move)
+            if len(winning_moves) > 0:
+                continue
+            g.make(move)
+            other_moves.append((move, -eval_fn(g)))
+            g.retract(move)
+        if len(winning_moves) > 0:
+            return random.choice(winning_moves)
+        max_outcome = max(other_moves, key=lambda x: x[1])[1]
+        best_moves = [move for (move, outcome) in other_moves if outcome == max_outcome]
+        return random.choice(best_moves)
 
     def play_mode_one_ply_piece_count(self, g):
-        # To do ...
-        # Note: only use the evaluation function to evaluate non-terminal states.
-        return random.choice(g.generate())
+        def evaluate_state(x):
+            white_pieces, black_pieces = x.get_pce_count()
+            diff = white_pieces - black_pieces
+            return (1 if x.get_to_move() == x.White else -1) * diff
+        return self.__play_mode_one_ply(g, evaluate_state)
 
     def play_mode_one_ply_model_value_head(self, g):
-        # To do ...
-        return random.choice(g.generate())
+        def model_eval(x):
+            x_tensor = game_tensor.state_to_tensor(x)
+            value, _ = self._model(x_tensor)
+            return value
+        return self.__play_mode_one_ply(g, model_eval)
 
     def play_mode_model_policy_head(self, g):
-        # To do ...
-        # Note: only use the evaluation function to evaluate non-terminal states.
+        g_tensor = game_tensor.state_to_tensor(g)
+        value, policy = self._model(g_tensor)
+
         return random.choice(g.generate())
 
     # -------------------------------- Methods -----------------------------------
