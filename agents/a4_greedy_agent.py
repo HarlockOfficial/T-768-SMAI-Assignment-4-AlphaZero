@@ -81,16 +81,25 @@ class A4GreedyAgent(agent.Agent):
 
     def play_mode_one_ply_model_value_head(self, g):
         def model_eval(x):
+            try:
+                game_tensor.assert_initialized()
+            except AssertionError:
+                game_tensor.init(g)
             x_tensor = game_tensor.state_to_tensor(x)
             value, _ = self._model(x_tensor)
             return value
         return self.__play_mode_one_ply(g, model_eval)
 
     def play_mode_model_policy_head(self, g):
+        try:
+            game_tensor.assert_initialized()
+        except AssertionError:
+            game_tensor.init(g)
         g_tensor = game_tensor.state_to_tensor(g)
-        value, policy = self._model(g_tensor)
-
-        return random.choice(g.generate())
+        _, policy_tensor = self._model(g_tensor)
+        all_moves = g.generate()
+        policy = game_tensor.move_tensor_to_policy(all_moves, policy_tensor, g.get_to_move())
+        return random.choices(list(policy.keys()), weights=list(policy.values()))[0]
 
     # -------------------------------- Methods -----------------------------------
 
