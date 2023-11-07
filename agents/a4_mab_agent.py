@@ -1,14 +1,14 @@
 import copy
 import math
 import random
-import misc.utils as utils
-import agents.agent as agent
-from misc import game_tensor as gt, game_tensor
-import misc.model_learner as model_learner
 
+import agents.agent as agent
+import misc.model_learner as model_learner
+import misc.utils as utils
 
 C_uct = 1.0
 C_puct = 1.0
+
 
 class A4MABAgent(agent.Agent):
     """
@@ -89,13 +89,7 @@ class A4MABAgent(agent.Agent):
         # If in a play_node requiring a nn, call the model and initialize the label.p[i] priors
         # with the returned policy.
         if self._play_mode >= 1:
-            try:
-                game_tensor.assert_initialized()
-            except AssertionError:
-                game_tensor.init(game)
-            g_tensor = game_tensor.state_to_tensor(game)
-            _, policy_tensor = self._model(g_tensor)
-            policy = game_tensor.move_tensor_to_policy(all_moves, policy_tensor, game.get_to_move())
+            _, policy = model_learner.inference(game, self._model)
             for i in range(label.len):
                 label.p[i] = policy[all_moves[i]]
 

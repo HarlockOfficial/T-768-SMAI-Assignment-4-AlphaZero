@@ -1,8 +1,7 @@
 import random
+
 import agents.agent as agent
-import misc.utils as utils
 import misc.model_learner as model_learner
-from misc import game_tensor
 
 
 class A4GreedyAgent(agent.Agent):
@@ -81,24 +80,12 @@ class A4GreedyAgent(agent.Agent):
 
     def play_mode_one_ply_model_value_head(self, g):
         def model_eval(x):
-            try:
-                game_tensor.assert_initialized()
-            except AssertionError:
-                game_tensor.init(g)
-            x_tensor = game_tensor.state_to_tensor(x)
-            value, _ = self._model(x_tensor)
+            value, _ = model_learner.inference(x, self._model)
             return value
         return self.__play_mode_one_ply(g, model_eval)
 
     def play_mode_model_policy_head(self, g):
-        try:
-            game_tensor.assert_initialized()
-        except AssertionError:
-            game_tensor.init(g)
-        g_tensor = game_tensor.state_to_tensor(g)
-        _, policy_tensor = self._model(g_tensor)
-        all_moves = g.generate()
-        policy = game_tensor.move_tensor_to_policy(all_moves, policy_tensor, g.get_to_move())
+        _, policy = model_learner.inference(g, self._model)
         return random.choices(list(policy.keys()), weights=list(policy.values()))[0]
 
     # -------------------------------- Methods -----------------------------------
