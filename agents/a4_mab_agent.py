@@ -43,14 +43,21 @@ class A4MABAgent(agent.Agent):
         return -1.0 if g.get_to_move() == player else 1.0
 
     @staticmethod
-    def uct(move: tuple, index: int):
+    def uct(node: NodeLabel, index: int):
         # TODO test, move might not have q
-        return move[1].q[index].avg + C_uct * math.sqrt(2 * math.log(move[1].n) / move[1].q[index].n)
+        q = node.q[index]
+        if q.n == 0:
+            return float('inf')
+        return q.avg + C_uct * math.sqrt(2 * math.log(node.n) / q.n)
 
     @staticmethod
-    def puct(move: tuple, index: int):
+    def puct(node: NodeLabel, index: int):
         # TODO test, move might not have q
-        return move[1].q[index].avg + C_puct * move[1].p[index] * math.sqrt(move[1].n) / (1 + move[1].q[index].n)
+        q = node.q[index]
+        if q.n == 0:
+            return float('inf')
+        p = node.p[index]
+        return q.avg + C_puct * p * math.sqrt(2 * math.log(node.n) / q.n)
     # -------------- Methods -----------------------
 
     def __init__(self, name, params):
@@ -96,15 +103,15 @@ class A4MABAgent(agent.Agent):
         num_simulations = 0
         while True:
             if self._play_mode == 0:
-                next_move_index = utils.argmax(label.moves, label.len, A4MABAgent.uct)
+                next_move_index = utils.argmax(label, label.len, A4MABAgent.uct)
             elif self._play_mode >= 1:
-                next_move_index = utils.argmax(label.moves, label.len, A4MABAgent.puct)
+                next_move_index = utils.argmax(label, label.len, A4MABAgent.puct)
             else:
                 raise ValueError('Invalid play mode')
             move = label.moves[next_move_index]
             game.make(move)
             result = A4MABAgent.playout(game)
-            game.unmake(move)
+            game.retract(move)
             label.q[next_move_index].add(result)
             label.n += 1
 

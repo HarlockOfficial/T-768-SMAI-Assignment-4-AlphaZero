@@ -86,7 +86,9 @@ class A4GreedyAgent(agent.Agent):
 
     def play_mode_model_policy_head(self, g):
         _, policy = model_learner.inference(g, self._model)
-        return random.choices(list(policy.keys()), weights=list(policy.values()))[0]
+        max_value = max(policy.values())
+        best_policies = [k for k, v in policy.items() if v == max_value]
+        return random.choice(best_policies)
 
     # -------------------------------- Methods -----------------------------------
 
