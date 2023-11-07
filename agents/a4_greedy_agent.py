@@ -14,7 +14,7 @@ class A4GreedyAgent(agent.Agent):
 
     @staticmethod
     def is_sqr_on_back_rank(g, sqr):
-        return g.get_board().row(sqr) in [0, g.get_board().row(sqr) - 1]
+        return g.get_board().row(sqr) in [0, g.get_board().rows() - 1]
 
     @staticmethod
     def is_capture_move(g, move):

@@ -6,8 +6,8 @@ import agents.agent as agent
 import misc.model_learner as model_learner
 import misc.utils as utils
 
-C_uct = 1.0
-C_puct = 1.0
+C_uct = math.sqrt(2) # 1.0/4.0 # https://ai.stackexchange.com/questions/24221/why-do-we-have-two-similar-action-selection-strategies-for-ucb1
+C_puct = math.sqrt(2)
 
 
 class A4MABAgent(agent.Agent):
@@ -44,7 +44,6 @@ class A4MABAgent(agent.Agent):
 
     @staticmethod
     def uct(node: NodeLabel, index: int):
-        # TODO test, move might not have q
         q = node.q[index]
         if q.n == 0:
             return float('inf')
@@ -52,7 +51,6 @@ class A4MABAgent(agent.Agent):
 
     @staticmethod
     def puct(node: NodeLabel, index: int):
-        # TODO test, move might not have q
         q = node.q[index]
         if q.n == 0:
             return float('inf')
