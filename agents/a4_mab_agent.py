@@ -108,7 +108,7 @@ class A4MABAgent(agent.Agent):
                 raise ValueError('Invalid play mode')
             move = label.moves[next_move_index]
             game.make(move)
-            result = A4MABAgent.playout(game)
+            result = -A4MABAgent.playout(game)
             game.retract(move)
             label.q[next_move_index].add(result)
             label.n += 1
