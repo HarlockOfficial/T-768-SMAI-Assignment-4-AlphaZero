@@ -32,7 +32,7 @@ agents = [a4_greedy_agent.A4GreedyAgent('pm_0', params | {'play_mode': 0}),
           a4_greedy_agent.A4GreedyAgent('pm_2', params | {'play_mode': 2}),
           a4_greedy_agent.A4GreedyAgent('pm_3', params | {'play_mode': 3}),
           a4_greedy_agent.A4GreedyAgent('pm_4', params | {'play_mode': 4})]
-result = play.play_a_tournament(breakthrough_game, agents, 50, False, random_ply=4)
+result = play.play_a_tournament(breakthrough_game, agents, 500, False, random_ply=4)
 print('Total:')
 print(play.score_game_records(result, agents))
 
@@ -40,14 +40,17 @@ print(play.score_game_records(result, agents))
 #
 # Example of benchmarking the two MAB agents.
 #
-params = {'verbose': 0, 'abort': 'iterations', 'number': 250, 'model': my_model}
+params = {'verbose': 0, 'abort': 'iterations', 'number': 500, 'model': my_model}
 agents = [a4_mab_agent.A4MABAgent('pm_0', params | {'play_mode': 0}),
           a4_mab_agent.A4MABAgent('pm_1', params | {'play_mode': 1})]
-play.benchmark_agents(breakthrough_game, agents, num_games=50, random_ply=4)
+#play.benchmark_agents(breakthrough_game, agents, num_games=50, random_ply=4)
 
 
 #
 # Example of how to do inference with models in PyTorch.
 #
-demo.demo_inference_1(breakthrough_game, my_model)
-demo.demo_inference_2(breakthrough_game, my_model)
+#demo.demo_inference_1(breakthrough_game, my_model)
+#demo.demo_inference_2(breakthrough_game, my_model)
+result = play.play_a_tournament(breakthrough_game, agents, 500, False, random_ply=4)
+print('Total:')
+print(play.score_game_records(result, agents))

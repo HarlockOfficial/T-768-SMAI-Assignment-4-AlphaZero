@@ -36,16 +36,29 @@ class A4GreedyAgent(agent.Agent):
     # -------------------------------- Play mode routines -----------------------------------
 
     def play_mode_any(self, g):
+        """
+        Play mode 0: pick a random move.
+
+        :param g: the game state
+        :return: the move to play
+        """
         return random.choice(g.generate())
 
     def play_mode_winning_captures_any(self, g):
+        """
+        Play mode 1: pick a winning move if there is one, otherwise pick a capture move if there is one,
+        otherwise pick a random move.
+
+        :param g: the game state
+        :return: the move to play
+        """
         moves_list = g.generate()
         winning_moves = []
         capture_moves = []
         for move in moves_list:
             if A4GreedyAgent.is_winning_move(g, move):
                 winning_moves.append(move)
-            elif A4GreedyAgent.is_capture_move(g, move):
+            elif len(winning_moves) == 0 and A4GreedyAgent.is_capture_move(g, move):
                 capture_moves.append(move)
         if len(winning_moves) > 0:
             return random.choice(winning_moves)
@@ -54,6 +67,20 @@ class A4GreedyAgent(agent.Agent):
         return random.choice(moves_list)
 
     def __play_mode_one_ply(self, g, eval_fn):
+        """
+        private helper function for play_mode_one_ply_piece_count and
+        play_mode_one_ply_model_value_head, which both use the same
+        algorithm to pick a move but a different method to evaluate the field state.
+
+        The algorithm extracts all the viable moves and then picks the move with the highest
+        evaluation value.
+
+        If after a move the game is won, the move is added to a specific list and the evaluation
+        function is not used.
+
+        :param g: the game state
+        :param eval_fn: the evaluation function to use
+        """
         all_moves = g.generate()
         winning_moves = []
         other_moves = []
@@ -72,6 +99,13 @@ class A4GreedyAgent(agent.Agent):
         return random.choice(best_moves)
 
     def play_mode_one_ply_piece_count(self, g):
+        """
+        Play mode 2: use the piece count heuristic to evaluate the state
+        and pick the move with the highest board state value according to the heuristic.
+
+        :param g: the game state
+        :return: the move to play
+        """
         def evaluate_state(x):
             white_pieces, black_pieces = x.get_pce_count()
             diff = white_pieces - black_pieces
@@ -79,12 +113,30 @@ class A4GreedyAgent(agent.Agent):
         return self.__play_mode_one_ply(g, evaluate_state)
 
     def play_mode_one_ply_model_value_head(self, g):
+        """
+        Play mode 3: use the model to evaluate the state
+        and pick the move with the highest board state value according to the model.
+
+
+        :param g: the game state
+        :return: the move to play
+        """
+
         def model_eval(x):
             value, _ = model_learner.inference(x, self._model)
             return value
         return self.__play_mode_one_ply(g, model_eval)
 
     def play_mode_model_policy_head(self, g):
+        """
+        Play mode 4: use the model to evaluate the state and pick the move with the highest
+        probability according to the model.
+
+        in case multiple moves have the same probability, pick one at random.
+
+        :param g: the game state
+        :return: the move to play
+        """
         _, policy = model_learner.inference(g, self._model)
         max_value = max(policy.values())
         best_policies = [k for k, v in policy.items() if v == max_value]
