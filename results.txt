@@ -1,0 +1,22 @@
+A4GreedyAgent a4_greedy_agent_pm_0 in play_mode number 0 (model=True).
+A4GreedyAgent a4_greedy_agent_pm_1 in play_mode number 1 (model=True).
+A4GreedyAgent a4_greedy_agent_pm_2 in play_mode number 2 (model=True).
+A4GreedyAgent a4_greedy_agent_pm_3 in play_mode number 3 (model=True).
+A4GreedyAgent a4_greedy_agent_pm_4 in play_mode number 4 (model=True).
+({'White': 500, 'Black': 500}, {'a4_greedy_agent_pm_0': 0, 'a4_greedy_agent_pm_1': 1000})
+({'White': 500, 'Black': 500}, {'a4_greedy_agent_pm_0': 0, 'a4_greedy_agent_pm_2': 1000})
+({'White': 500, 'Black': 500}, {'a4_greedy_agent_pm_0': 0, 'a4_greedy_agent_pm_3': 1000})
+({'White': 500, 'Black': 500}, {'a4_greedy_agent_pm_0': 0, 'a4_greedy_agent_pm_4': 1000})
+({'White': 500, 'Black': 500}, {'a4_greedy_agent_pm_1': 500, 'a4_greedy_agent_pm_2': 500})
+({'White': 452, 'Black': 548}, {'a4_greedy_agent_pm_1': 284, 'a4_greedy_agent_pm_3': 716})
+({'White': 532, 'Black': 468}, {'a4_greedy_agent_pm_1': 374, 'a4_greedy_agent_pm_4': 626})
+({'White': 438, 'Black': 562}, {'a4_greedy_agent_pm_2': 290, 'a4_greedy_agent_pm_3': 710})
+({'White': 484, 'Black': 516}, {'a4_greedy_agent_pm_2': 354, 'a4_greedy_agent_pm_4': 646})
+({'White': 513, 'Black': 487}, {'a4_greedy_agent_pm_3': 877, 'a4_greedy_agent_pm_4': 123})
+Total:
+({'White': 4919, 'Black': 5081}, {'a4_greedy_agent_pm_0': 0, 'a4_greedy_agent_pm_1': 2158, 'a4_greedy_agent_pm_2': 2144, 'a4_greedy_agent_pm_3': 3303, 'a4_greedy_agent_pm_4': 2395})
+A4MABAgent mab_agent_pm_0 in play_mode number 0 (model=True).
+A4MABAgent mab_agent_pm_1 in play_mode number 1 (model=True).
+({'White': 445, 'Black': 555}, {'mab_agent_pm_0': 183, 'mab_agent_pm_1': 817})
+Total:
+({'White': 445, 'Black': 555}, {'mab_agent_pm_0': 183, 'mab_agent_pm_1': 817})

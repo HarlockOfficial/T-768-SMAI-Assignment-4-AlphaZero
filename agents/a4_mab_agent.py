@@ -1,10 +1,13 @@
 import copy
 import math
 import random
-import misc.utils as utils
+
 import agents.agent as agent
-from misc import game_tensor as gt
 import misc.model_learner as model_learner
+import misc.utils as utils
+
+C_uct = math.sqrt(2) # 1.0/4.0 # https://ai.stackexchange.com/questions/24221/why-do-we-have-two-similar-action-selection-strategies-for-ucb1
+C_puct = math.sqrt(2)
 
 
 class A4MABAgent(agent.Agent):
@@ -22,7 +25,7 @@ class A4MABAgent(agent.Agent):
             self.p = [1.0 for _ in range(self.len)]
             return
 
-    # ------------------------- Some helper routines  (you add as needed(  -------------------------------
+    # ------------------------- Some helper routines  (you add as needed)  -------------------------------
 
     @staticmethod
     def visits(q, i):
@@ -39,6 +42,20 @@ class A4MABAgent(agent.Agent):
             g.make(move)
         return -1.0 if g.get_to_move() == player else 1.0
 
+    @staticmethod
+    def uct(node: NodeLabel, index: int):
+        q = node.q[index]
+        if q.n == 0:
+            return float('inf')
+        return q.avg + C_uct * math.sqrt(2 * math.log(node.n) / q.n)
+
+    @staticmethod
+    def puct(node: NodeLabel, index: int):
+        q = node.q[index]
+        if q.n == 0:
+            return float('inf')
+        p = node.p[index]
+        return q.avg + C_puct * p * math.sqrt(2 * math.log(node.n) / q.n)
     # -------------- Methods -----------------------
 
     def __init__(self, name, params):
@@ -71,20 +88,30 @@ class A4MABAgent(agent.Agent):
         self._abort_checker.reset()
 
         # Use to keep track of root statistics.
-        label = self.NodeLabel(game.generate(True))
+        all_moves = game.generate(True)
+        label = self.NodeLabel(all_moves)
 
         # If in a play_node requiring a nn, call the model and initialize the label.p[i] priors
         # with the returned policy.
-        # TO DO:
-        ...
+        if self._play_mode >= 1:
+            _, policy = model_learner.inference(game, self._model)
+            for i in range(label.len):
+                label.p[i] = policy[all_moves[i]]
 
         num_simulations = 0
         while True:
-
-            # TO DO:
-            # Pick a move using UCT/PUCT, simulate it (using the playout(...) routine,
-            # and update necessary logistics.
-            ...
+            if self._play_mode == 0:
+                next_move_index = utils.argmax(label, label.len, A4MABAgent.uct)
+            elif self._play_mode >= 1:
+                next_move_index = utils.argmax(label, label.len, A4MABAgent.puct)
+            else:
+                raise ValueError('Invalid play mode')
+            move = label.moves[next_move_index]
+            game.make(move)
+            result = -A4MABAgent.playout(game)
+            game.retract(move)
+            label.q[next_move_index].add(result)
+            label.n += 1
 
             # Update simulation count, and check if search resources up.
             num_simulations += 1
